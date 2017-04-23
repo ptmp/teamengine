@@ -49,6 +49,14 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 
+import java.security.SecureRandom;
+import java.math.BigInteger;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 // TODO refactor: buildDOM3LoadAndSaveFactory should not be in a listener
 import com.occamlab.te.web.listeners.CleartextPasswordContextListener;
 
@@ -67,6 +75,11 @@ public class ForgotPasswordServlet extends HttpServlet {
         conf = new Config();
     }
 
+    /**
+     * Handles request to reset user password
+     * Generate link to reset password and send it by email
+     *
+     */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         try {
             // Get username from request
@@ -93,6 +106,7 @@ public class ForgotPasswordServlet extends HttpServlet {
                     // Parse userFile xml
                     Document doc = domBuilder.parse(userFile);
                     Element root = doc.getDocumentElement();
+
                     // Remove old nodes: forgotPasswordToken and forgotPasswordDate if exist
                     NodeList targets = doc.getElementsByTagName("forgotPasswordToken");
                     int toDelete = targets.getLength();
@@ -104,6 +118,26 @@ public class ForgotPasswordServlet extends HttpServlet {
                     for (int i = toDelete-1; i >=0 ; i--) {
                         root.removeChild(targets.item(i));
                     }
+
+                    // Create a random token for password reset. User will follow a link sent by email, containing this token.
+                    SecureRandom random = new SecureRandom();
+                    String token = new BigInteger(130, random).toString(32);
+                    // Create forgotPassWordToken node
+                    Element forgotPasswordTokenNode = doc.createElement("forgotPasswordToken");
+                    forgotPasswordTokenNode.appendChild(doc.createTextNode(token));
+
+                    // Create date node
+                    TimeZone tz = TimeZone.getTimeZone("UTC");
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+                    df.setTimeZone(tz);
+                    String nowAsISO = df.format(new Date());
+                    // Create forgotPassWordDate node
+                    Element forgotPasswordDateNode = doc.createElement("forgotPasswordDate");
+                    forgotPasswordDateNode.appendChild(doc.createTextNode(nowAsISO));
+
+                    // Append nodes to root
+                    root.appendChild(forgotPasswordTokenNode);
+                    root.appendChild(forgotPasswordDateNode);
 
                     // Create a serializer to overwrite user file
                     DOMImplementationLS lsFactory = CleartextPasswordContextListener.buildDOM3LoadAndSaveFactory(); // TODO refactor: move buildDOM3LoadAndSaveFactory elsewhere, not in a listener
