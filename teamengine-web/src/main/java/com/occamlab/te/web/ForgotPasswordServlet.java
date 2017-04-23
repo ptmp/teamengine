@@ -32,8 +32,29 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+// TODO: remove this after debugging
+import java.io.PrintWriter;
+
+import org.apache.xerces.impl.Constants;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+
+// TODO refactor: buildDOM3LoadAndSaveFactory should not be in a listener
+import com.occamlab.te.web.listeners.CleartextPasswordContextListener;
+
+
 /**
- * Handles requests to register new users.
+ * Handles requests to reset user password (forgotten password).
  * 
  */
 public class ForgotPasswordServlet extends HttpServlet {
@@ -48,7 +69,71 @@ public class ForgotPasswordServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         try {
-            response.sendRedirect("test.jsp");
+            // Get username from request
+            String username = request.getParameter("username");
+            File userDir = new File(conf.getUsersDir(), username);
+            
+            // Debug
+            response.setContentType("text/plain");
+            PrintWriter out = response.getWriter();
+            out.println("username: " + username);
+            
+            if (userDir.exists()) {
+                // Username exists
+                try {
+                    // Create a domBuilder for xml dom manipulation
+                    DocumentBuilder domBuilder = null;
+                    try {
+                        domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                    } catch (ParserConfigurationException e) {
+                        throw new ServletException(e);
+                    }
+                    // Get user file
+                    File userFile = new File(userDir, "user.xml");
+                    // Parse userFile xml
+                    Document doc = domBuilder.parse(userFile);
+                    Element root = doc.getDocumentElement();
+                    // Remove old nodes: forgotPasswordToken and forgotPasswordDate if exist
+                    NodeList targets = doc.getElementsByTagName("forgotPasswordToken");
+                    int toDelete = targets.getLength();
+                    for (int i = toDelete-1; i >=0 ; i--) {
+                        root.removeChild(targets.item(i));
+                    }
+                    targets = doc.getElementsByTagName("forgotPasswordDate");
+                    toDelete = targets.getLength();
+                    for (int i = toDelete-1; i >=0 ; i--) {
+                        root.removeChild(targets.item(i));
+                    }
+
+                    // Create a serializer to overwrite user file
+                    DOMImplementationLS lsFactory = CleartextPasswordContextListener.buildDOM3LoadAndSaveFactory(); // TODO refactor: move buildDOM3LoadAndSaveFactory elsewhere, not in a listener
+                    LSSerializer serializer = lsFactory.createLSSerializer();
+                    serializer.getDomConfig().setParameter(Constants.DOM_XMLDECL, Boolean.FALSE);
+                    serializer.getDomConfig().setParameter(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.TRUE);
+                    LSOutput output = lsFactory.createLSOutput();
+                    output.setEncoding("UTF-8");
+                    // Overwrite contents of user file                   
+                    output.setByteStream(new FileOutputStream(userFile, false));
+                    serializer.write(doc, output);
+
+                    /*
+                    Node pwNode = doc.getElementsByTagName("password").item(0);
+                    if (null == pwNode) {
+                        continue;
+                    }
+                    String password = pwNode.getTextContent();
+                    if (password.split(":").length == 5) {
+                        break;
+                    }
+                    pwNode.setTextContent(PasswordStorage.createHash(password));
+                    // overwrite contents of file
+                    output.setByteStream(new FileOutputStream(userFile, false));
+                    serializer.write(doc, output);*/
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
+            }
+            //response.sendRedirect("test.jsp");
         }
         catch (Exception e) {
             throw new ServletException(e);

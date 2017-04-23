@@ -106,7 +106,7 @@ public class CleartextPasswordContextListener implements ServletContextListener 
      * @see <a href="https://www.w3.org/TR/DOM-Level-3-LS/">Document Object
      *      Model (DOM) Level 3 Load and Save Specification, Version 1.0</a>
      */
-    DOMImplementationLS buildDOM3LoadAndSaveFactory() {
+    public static DOMImplementationLS buildDOM3LoadAndSaveFactory() {
         DOMImplementationLS factory = null;
         try {
             DOMImplementationRegistry domRegistry = DOMImplementationRegistry.newInstance();
