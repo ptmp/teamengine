@@ -43,7 +43,12 @@ if (request.getParameter("error") != null) {
 				<input type="submit" value="Log In"/><br/>
 			</p>
 		</form>
+		<p>
+		<a href="forgotPassword.jsp">Forgot password?</a>
+		</p>
+		<p>
 		If you don't have a username and password, please <a href="register.jsp">register</a>.
+		</p>
 		<%@ include file="footer.jsp" %>
 	</body>
 </html>

@@ -26,6 +26,10 @@
     <servlet-class>com.occamlab.te.web.RegistrationHandlerServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>forgotPassword</servlet-name>
+    <servlet-class>com.occamlab.te.web.ForgotPasswordServlet</servlet-class>
+  </servlet>  
+  <servlet>
     <servlet-name>logout</servlet-name>
     <servlet-class>com.occamlab.te.web.LogoutServlet</servlet-class>
   </servlet>
@@ -99,6 +103,10 @@
   <servlet-mapping>
     <servlet-name>registrationHandler</servlet-name>
     <url-pattern>/registrationHandler</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>forgotPassword</servlet-name>
+    <url-pattern>/forgotPassword</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>logout</servlet-name>
