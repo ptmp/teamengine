@@ -52,9 +52,9 @@ public class EmailLogServlet extends javax.servlet.http.HttpServlet implements
             File zipFile = new File(userdir,
                     request.getParameter("zipFileName"));
 
-            if (sendLog(getServletConfig().getInitParameter("mail.smtp.host"),
-                    getServletConfig().getInitParameter("mail.smtp.userid"),
-                    getServletConfig().getInitParameter("mail.smtp.passwd"),
+            if (sendLog(getServletContext().getInitParameter("mail.smtp.host"),
+                    getServletContext().getInitParameter("mail.smtp.userid"),
+                    getServletContext().getInitParameter("mail.smtp.passwd"),
                     request.getParameter("to"), request.getParameter("from"),
                     request.getParameter("subject"),
                     request.getParameter("message"), zipFile)) {
@@ -83,7 +83,7 @@ public class EmailLogServlet extends javax.servlet.http.HttpServlet implements
             ZipUtils.zipDir(zipFile, sessiondir);
             request.setAttribute("zipFileName", zipFileName);
             request.setAttribute("to",
-                    getServletConfig().getInitParameter("mail.to"));
+                    getServletContext().getInitParameter("mail.to"));
             RequestDispatcher rd = request.getRequestDispatcher("emailLog.jsp");
             rd.forward(request, response);
 

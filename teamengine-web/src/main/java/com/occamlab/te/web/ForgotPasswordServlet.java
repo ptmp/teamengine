@@ -57,9 +57,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.util.Properties;
+
+
 // TODO refactor: buildDOM3LoadAndSaveFactory should not be in a listener
 import com.occamlab.te.web.listeners.CleartextPasswordContextListener;
 
+// TODO:
+// * inform users that location of smtp config has changed in web.xml
+// * check that EmailLogServlet still works despite this change
 
 /**
  * Handles requests to reset user password (forgotten password).
@@ -150,6 +165,24 @@ public class ForgotPasswordServlet extends HttpServlet {
                     output.setByteStream(new FileOutputStream(userFile, false));
                     serializer.write(doc, output);
 
+                    // Get user email
+                    Node pwNode = doc.getElementsByTagName("email").item(0);
+                    if (null == pwNode) {
+                        // TODO
+                    }
+                    String userEmail = pwNode.getTextContent();
+
+                    // Send token by email
+                    if (sendResetPasswordEmail(getServletContext().getInitParameter("mail.smtp.host"),
+                            getServletContext().getInitParameter("mail.smtp.userid"),
+                            getServletContext().getInitParameter("mail.smtp.passwd"),
+                            userEmail, "noreply@teamengine.com",
+                            token)) {
+                        request.setAttribute("emailStatus", "Email sent Succesfully");
+                    } else {
+                        request.setAttribute("emailStatus", "Email failed");
+                    }
+
                     /*
                     Node pwNode = doc.getElementsByTagName("password").item(0);
                     if (null == pwNode) {
@@ -203,4 +236,75 @@ public class ForgotPasswordServlet extends HttpServlet {
             throw new ServletException(e);
         }*/
     }
+
+    boolean sendResetPasswordEmail(String host, String userId, String password,
+            String to, String from, String forgotPasswordToken) {
+        boolean success = true;
+
+        // Create subject
+        String subject = "TeamEngine password reset";
+        // Create message
+        String message = "Here is your token to reset your password: ";
+        message += forgotPasswordToken;
+        message += "\n";
+        message += "This token will expire after 24h.";
+
+        System.out.println("host: " + host);
+        System.out.println("userId: " + userId);
+        System.out.println("to: " + to);
+        System.out.println("from: " + from);
+        System.out.println("subject: " + subject);
+        System.out.println("message: " + message);
+
+        // create some properties and get the default Session
+        Properties props = System.getProperties();
+        props.setProperty("mail.smtp.host", host);
+        props.setProperty("mail.smtp.auth", "true");
+
+        Session session = Session.getInstance(props, null);
+        session.setDebug(true);
+
+        try {
+            // create a message
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(from));
+            InternetAddress[] address = { new InternetAddress(to) };
+            msg.setRecipients(Message.RecipientType.TO, address);
+            msg.setSubject(subject);
+
+            // create and fill the first message part
+            MimeBodyPart mbp1 = new MimeBodyPart();
+            mbp1.setText(message);
+
+            // create the Multipart and add its parts to it
+            Multipart mp = new MimeMultipart();
+            mp.addBodyPart(mbp1);
+
+            // add the Multipart to the message
+            msg.setContent(mp);
+
+            // set the Date: header
+            msg.setSentDate(new Date());
+
+            // connect to the transport
+            Transport trans = session.getTransport("smtp");
+            trans.connect(host, userId, password);
+
+            // send the message
+            trans.sendMessage(msg, msg.getAllRecipients());
+
+            // smtphost
+            trans.close();
+
+        } catch (MessagingException mex) {
+            success = false;
+            mex.printStackTrace();
+            Exception ex = null;
+            if ((ex = mex.getNextException()) != null) {
+                ex.printStackTrace();
+            }
+        }
+        return success;
+    }
+
 }

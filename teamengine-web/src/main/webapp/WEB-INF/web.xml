@@ -11,6 +11,29 @@
     <param-name>appVersion</param-name>
     <param-value>${project.version}</param-value>
   </context-param>
+
+
+  <context-param>
+      <description>SMTP Server</description>
+      <param-name>mail.smtp.host</param-name>
+      <param-value>smtpserver.example.com</param-value>
+  </context-param>
+  <context-param>
+      <description>SMTP UserId</description>
+      <param-name>mail.smtp.userid</param-name>
+      <param-value>userid</param-value>
+  </context-param>
+  <context-param>
+      <description>SMTP Password</description>
+      <param-name>mail.smtp.passwd</param-name>
+      <param-value>password</param-value>
+  </context-param>
+  <context-param>
+      <description>Mail To Address</description>
+      <param-name>mail.to</param-name>
+      <param-value>approver@example.com</param-value>
+  </context-param>
+  
   <servlet>
     <servlet-name>test</servlet-name>
     <servlet-class>com.occamlab.te.web.TestServlet</servlet-class>
@@ -48,26 +71,6 @@
   <servlet>
     <servlet-name>emailLog</servlet-name>
     <servlet-class>com.occamlab.te.web.EmailLogServlet</servlet-class>
-    <init-param>
-      <description>SMTP Server</description>
-      <param-name>mail.smtp.host</param-name>
-      <param-value>smtpserver.example.com</param-value>
-    </init-param>
-    <init-param>
-      <description>SMTP UserId</description>
-      <param-name>mail.smtp.userid</param-name>
-      <param-value>userid</param-value>
-    </init-param>
-    <init-param>
-      <description>SMTP Password</description>
-      <param-name>mail.smtp.passwd</param-name>
-      <param-value>password</param-value>
-    </init-param>
-    <init-param>
-      <description>Mail To Address</description>
-      <param-name>mail.to</param-name>
-      <param-value>approver@example.com</param-value>
-    </init-param>
   </servlet>
   <servlet>
     <servlet-name>TestSuiteController</servlet-name>
