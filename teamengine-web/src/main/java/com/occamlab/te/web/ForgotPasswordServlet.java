@@ -68,6 +68,8 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.util.Properties;
 
+import javax.servlet.RequestDispatcher;
+
 
 // TODO refactor: buildDOM3LoadAndSaveFactory should not be in a listener
 import com.occamlab.te.web.listeners.CleartextPasswordContextListener;
@@ -100,12 +102,7 @@ public class ForgotPasswordServlet extends HttpServlet {
             // Get username from request
             String username = request.getParameter("username");
             File userDir = new File(conf.getUsersDir(), username);
-            
-            // Debug
-            response.setContentType("text/plain");
-            PrintWriter out = response.getWriter();
-            out.println("username: " + username);
-            
+                       
             if (userDir.exists()) {
                 // Username exists
                 try {
@@ -178,9 +175,9 @@ public class ForgotPasswordServlet extends HttpServlet {
                             getServletContext().getInitParameter("mail.smtp.passwd"),
                             userEmail, "noreply@teamengine.com",
                             username, token)) {
-                        request.setAttribute("emailStatus", "Email sent Succesfully");
+                        request.setAttribute("emailStatus", "An email has been sent to you. Please check your inbox.");
                     } else {
-                        request.setAttribute("emailStatus", "Email failed");
+                        request.setAttribute("emailStatus", "Email failed. Please try again or contact site admin.");
                     }
 
                     /*
@@ -200,41 +197,12 @@ public class ForgotPasswordServlet extends HttpServlet {
                     throw new ServletException(e);
                 }
             }
-            //response.sendRedirect("test.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("forgotPassword.jsp");
+            rd.forward(request, response);
         }
         catch (Exception e) {
             throw new ServletException(e);
         }
-        /*try {
-            String username = request.getParameter("username");
-            String password = request.getParameter("password");
-            String hashedPassword = PasswordStorage.createHash(password);
-            String email = request.getParameter("email");
-            File userDir = new File(conf.getUsersDir(), username);
-            if (userDir.exists()) {
-                String url = "register.jsp?error=duplicate&username=" + username;
-                if (email != null) {
-                    url += "&email=" + email;
-                }
-                response.sendRedirect(url);
-            } else {
-                userDir.mkdirs();
-                File xmlfile = new File(userDir, "user.xml");
-                PrintStream out = new PrintStream(new FileOutputStream(xmlfile));
-                out.println("<user>");
-                out.println(" <name>" + username + "</name>");
-                out.println(" <roles>");
-                out.println("  <name>user</name>");
-                out.println(" </roles>");
-                out.println(" <password>" + hashedPassword + "</password>");
-                out.println(" <email>" + email + "</email>");
-                out.println("</user>");
-                out.close();
-                response.sendRedirect("test.jsp");
-            }
-        } catch (Exception e) {
-            throw new ServletException(e);
-        }*/
     }
 
     boolean sendResetPasswordEmail(String host, String userId, String password,

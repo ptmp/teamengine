@@ -34,6 +34,13 @@ if (request.getParameter("error") != null) {
 	out.println("<span style=\"color: red\">The username and/or password did not match.  Please try again.</span>");
 }
 %>
+<%
+if (request.getAttribute("emailStatus") != null) {
+	out.println("<span style=\"color: red\">");
+	out.println(request.getAttribute("emailStatus"));
+	out.println("</span>");
+}
+%>
 		<form method="post" action="forgotPassword">
 			<p>
 				Enter your username:<br/>
