@@ -77,7 +77,12 @@ public class ForgotPasswordResetServlet extends HttpServlet {
         try {
             String username = request.getParameter("username");
             String forgotPasswordToken = request.getParameter("token");
-            //request.setAttribute("error", true);
+            
+            // Check if token is valid
+            if (!checkToken(username, forgotPasswordToken)) {
+                // Invalid token
+                request.setAttribute("error", true);
+            }
             
             RequestDispatcher rd = request.getRequestDispatcher("forgotPasswordReset.jsp");
             rd.forward(request, response);
@@ -85,5 +90,59 @@ public class ForgotPasswordResetServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    /**
+     * Checks is username and forgotPasswordToken matches, and that token is not expired
+     * @return true if match, otherwise false
+     *
+     */
+    boolean checkToken(String username, String forgotPasswordToken)
+                throws ServletException {
+            File userDir = new File(conf.getUsersDir(), username);
+                       
+            if (userDir.exists()) {
+                // Username exists
+                try {
+                    // Create a domBuilder for xml dom manipulation
+                    DocumentBuilder domBuilder = null;
+                    try {
+                        domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                    } catch (ParserConfigurationException e) {
+                        throw new ServletException(e);
+                    }
+                    // Get user file
+                    File userFile = new File(userDir, "user.xml");
+                    // Parse userFile xml
+                    Document doc = domBuilder.parse(userFile);
+                    Element root = doc.getDocumentElement();
+
+                    // Get user token
+                    Node fptNode = doc.getElementsByTagName("forgotPasswordToken").item(0);
+                    if (null == fptNode) {
+                        // No token for this user
+                        return false;
+                    }
+                    String userToken = fptNode.getTextContent();
+
+                    // Check if tokens match
+                    if (!userToken.equals(forgotPasswordToken)) {
+                        // Tokens do not match
+                        return false;
+                    }
+
+                    // TODO check if token is expired
+
+                    // All validations passed, token is valid
+                    return true;
+
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
+            }
+            else {
+                // No user with this username
+                return false;
+            }
     }
 }
