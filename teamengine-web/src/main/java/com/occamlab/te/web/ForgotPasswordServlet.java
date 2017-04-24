@@ -246,7 +246,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         // Create message
         String message = "Please paste this url in your browser to reset your password:\n";
         message += getServletContext().getInitParameter("base.url");
-        message += "/forgotPasswordReset.jsp";
+        message += "/forgotPasswordReset";
         message += "?token=";
         message += forgotPasswordToken;
         message += "&username=";

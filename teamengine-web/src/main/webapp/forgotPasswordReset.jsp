@@ -30,7 +30,7 @@
 		<%@ include file="header.jsp" %>
 		<h2>Reset password</h2>
 <%
-if (request.getParameter("error") != null) {
+if (request.getAttribute("error") != null) {
 	out.println("<span style=\"color: red\">This url is invalid or has expired.</span>");
 }
 %>
