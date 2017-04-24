@@ -180,7 +180,25 @@ public class ForgotPasswordResetServlet extends HttpServlet {
                         return false;
                     }
 
-                    // TODO check if token is expired
+
+                    // Get creation date of token
+                    Node dateNode = doc.getElementsByTagName("forgotPasswordDate").item(0);
+                    if (null == fptNode) {
+                        // No date for this user
+                        return false;
+                    }
+                    // Check if token is expired
+                    String isoDateString = dateNode.getTextContent();
+                    TimeZone tz = TimeZone.getTimeZone("UTC");
+                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+                    df.setTimeZone(tz);
+                    Date tokenDate = df.parse(isoDateString);
+                    Date now = new Date();
+                    long diff = now.getTime() - tokenDate.getTime();
+                    if (diff > 24 * 60 * 60 * 1000) {   // 24h in milliseconds
+                        // Token is more than 24h old, it is expired
+                        return false;
+                    }
 
                     // All validations passed, token is valid
                     return true;
