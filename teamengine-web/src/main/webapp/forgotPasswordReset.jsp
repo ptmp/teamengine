@@ -33,6 +33,7 @@
 if (request.getAttribute("error") != null) {
 	out.println("<span style=\"color: red\">This url is invalid or has expired.</span>");
 }
+else {
 %>
 		<form method="post" action="forgotPasswordReset">
 			<p>
@@ -47,6 +48,7 @@ if (request.getAttribute("error") != null) {
 				<input type="submit" value="Submit"/><br/>
 			</p>
 		</form>
+<% } %>
 		<%@ include file="footer.jsp" %>
 	</body>
 </html>
