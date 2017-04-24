@@ -33,13 +33,12 @@
 if (request.getParameter("error") != null) {
 	out.println("<span style=\"color: red\">The username and/or password did not match.  Please try again.</span>");
 }
-%>
-<%
-if (request.getAttribute("emailStatus") != null) {
+else if (request.getAttribute("emailStatus") != null) {
 	out.println("<span style=\"color: red\">");
 	out.println(request.getAttribute("emailStatus"));
 	out.println("</span>");
 }
+else {
 %>
 		<form method="post" action="forgotPassword">
 			<p>
@@ -52,6 +51,7 @@ if (request.getAttribute("emailStatus") != null) {
 		<p>
 		If you don't have a username and password, please <a href="register.jsp">register</a>.
 		</p>
+<% } %>
 		<%@ include file="footer.jsp" %>
 	</body>
 </html>
