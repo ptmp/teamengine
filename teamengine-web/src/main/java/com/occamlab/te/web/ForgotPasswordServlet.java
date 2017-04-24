@@ -197,6 +197,10 @@ public class ForgotPasswordServlet extends HttpServlet {
                     throw new ServletException(e);
                 }
             }
+            else {
+                // Username does not exist
+                request.setAttribute("error_user", true);
+            }
             RequestDispatcher rd = request.getRequestDispatcher("forgotPassword.jsp");
             rd.forward(request, response);
         }
