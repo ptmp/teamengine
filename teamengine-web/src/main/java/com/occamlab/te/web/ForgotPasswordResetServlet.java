@@ -56,6 +56,9 @@ import java.util.TimeZone;
 
 import javax.servlet.RequestDispatcher;
 
+// TODO refactor: buildDOM3LoadAndSaveFactory should not be in a listener
+import com.occamlab.te.web.listeners.CleartextPasswordContextListener;
+
 // TODO:
 // * inform users that location of smtp config has changed in web.xml
 // * check that EmailLogServlet still works despite this change
@@ -125,6 +128,8 @@ public class ForgotPasswordResetServlet extends HttpServlet {
                     request.setAttribute("error_password_match", true);
                 }
                 else {
+                    // All verifications OK, save new password
+                    saveNewPassword(username, password);
                     request.setAttribute("done", true);
                 }
             }
@@ -188,5 +193,66 @@ public class ForgotPasswordResetServlet extends HttpServlet {
                 // No user with this username
                 return false;
             }
+    }
+
+    /**
+     * Save new password in user file
+     *
+     */
+    void saveNewPassword(String username, String password) throws ServletException {
+
+        File userDir = new File(conf.getUsersDir(), username);
+                   
+        if (userDir.exists()) {
+            // Username exists
+            try {
+                // Create a domBuilder for xml dom manipulation
+                DocumentBuilder domBuilder = null;
+                try {
+                    domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                } catch (ParserConfigurationException e) {
+                    throw new ServletException(e);
+                }
+                // Get user file
+                File userFile = new File(userDir, "user.xml");
+                // Parse userFile xml
+                Document doc = domBuilder.parse(userFile);
+                Element root = doc.getDocumentElement();
+
+                // Remove old nodes: forgotPasswordToken and forgotPasswordDate if exist
+                NodeList targets = doc.getElementsByTagName("forgotPasswordToken");
+                int toDelete = targets.getLength();
+                for (int i = toDelete-1; i >=0 ; i--) {
+                    root.removeChild(targets.item(i));
+                }
+                targets = doc.getElementsByTagName("forgotPasswordDate");
+                toDelete = targets.getLength();
+                for (int i = toDelete-1; i >=0 ; i--) {
+                    root.removeChild(targets.item(i));
+                }
+
+                // Hash password
+                String hashedPassword = PasswordStorage.createHash(password);
+                // Get password node
+                Node pwNode = doc.getElementsByTagName("password").item(0);
+                // Update password in node
+                pwNode.setTextContent(hashedPassword);
+
+                // Create a serializer to overwrite user file
+                DOMImplementationLS lsFactory = CleartextPasswordContextListener.buildDOM3LoadAndSaveFactory(); // TODO refactor: move buildDOM3LoadAndSaveFactory elsewhere, not in a listener
+                LSSerializer serializer = lsFactory.createLSSerializer();
+                serializer.getDomConfig().setParameter(Constants.DOM_XMLDECL, Boolean.FALSE);
+                serializer.getDomConfig().setParameter(Constants.DOM_FORMAT_PRETTY_PRINT, Boolean.TRUE);
+                LSOutput output = lsFactory.createLSOutput();
+                output.setEncoding("UTF-8");
+                // Overwrite contents of user file                   
+                output.setByteStream(new FileOutputStream(userFile, false));
+                serializer.write(doc, output);
+
+            } catch (Exception e) {
+                throw new ServletException(e);
+            }
+        }
+
     }
 }
