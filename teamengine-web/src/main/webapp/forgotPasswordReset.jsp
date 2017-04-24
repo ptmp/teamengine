@@ -42,7 +42,7 @@ if (request.getAttribute("error") != null) {
 }
 else if (request.getAttribute("done") != null) {
 	out.println("<span style=\"color: red\">Your new password has been saved.</span>");
-	out.println("<a href=\"test.jsp\">Go to home page.</a>");
+	out.println("<a href=\"viewSessions.jsp\">Start testing.</a>");
 }
 else {
 %>
