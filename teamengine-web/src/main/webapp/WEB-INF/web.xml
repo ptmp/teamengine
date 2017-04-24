@@ -12,7 +12,12 @@
     <param-value>${project.version}</param-value>
   </context-param>
 
-
+  <context-param>
+      <description>Base teamengine-web url</description>
+      <param-name>base.url</param-name>
+      <param-value>http://localhost:8080/teamengine</param-value>
+  </context-param>
+  
   <context-param>
       <description>SMTP Server</description>
       <param-name>mail.smtp.host</param-name>

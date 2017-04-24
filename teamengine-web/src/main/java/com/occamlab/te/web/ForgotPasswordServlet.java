@@ -177,7 +177,7 @@ public class ForgotPasswordServlet extends HttpServlet {
                             getServletContext().getInitParameter("mail.smtp.userid"),
                             getServletContext().getInitParameter("mail.smtp.passwd"),
                             userEmail, "noreply@teamengine.com",
-                            token)) {
+                            username, token)) {
                         request.setAttribute("emailStatus", "Email sent Succesfully");
                     } else {
                         request.setAttribute("emailStatus", "Email failed");
@@ -238,16 +238,21 @@ public class ForgotPasswordServlet extends HttpServlet {
     }
 
     boolean sendResetPasswordEmail(String host, String userId, String password,
-            String to, String from, String forgotPasswordToken) {
+            String to, String from, String username, String forgotPasswordToken) {
         boolean success = true;
 
         // Create subject
         String subject = "TeamEngine password reset";
         // Create message
-        String message = "Here is your token to reset your password: ";
+        String message = "Please paste this url in your browser to reset your password:\n";
+        message += getServletContext().getInitParameter("base.url");
+        message += "/forgotPasswordReset.jsp";
+        message += "?token=";
         message += forgotPasswordToken;
+        message += "&username=";
+        message += username;
         message += "\n";
-        message += "This token will expire after 24h.";
+        message += "This url will expire after 24h.";
 
         System.out.println("host: " + host);
         System.out.println("userId: " + userId);
