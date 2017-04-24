@@ -30,8 +30,19 @@
 		<%@ include file="header.jsp" %>
 		<h2>Reset password</h2>
 <%
+if (request.getAttribute("error_password_required") != null) {
+	out.println("<span style=\"color: red\">Password is required.</span>");
+}
+if (request.getAttribute("error_password_match") != null) {
+	out.println("<span style=\"color: red\">Passwords don't match.</span>");
+}
+
 if (request.getAttribute("error") != null) {
 	out.println("<span style=\"color: red\">This url is invalid or has expired.</span>");
+}
+else if (request.getAttribute("done") != null) {
+	out.println("<span style=\"color: red\">Your new password has been saved.</span>");
+	out.println("<a href=\"test.jsp\">Go to home page.</a>");
 }
 else {
 %>
@@ -45,6 +56,8 @@ else {
 				<br/>
 				Password: <input type="text" name="password_confirm"/><br/>
 				<br/>
+				<input type="hidden" name="token" value="<%=request.getParameter("token")%>">
+				<input type="hidden" name="username" value="<%=request.getParameter("username")%>">
 				<input type="submit" value="Submit"/><br/>
 			</p>
 		</form>

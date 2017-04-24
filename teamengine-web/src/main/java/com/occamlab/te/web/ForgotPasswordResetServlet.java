@@ -72,6 +72,10 @@ public class ForgotPasswordResetServlet extends HttpServlet {
         conf = new Config();
     }
 
+    /**
+     * Checks if token is valid and show form to reset password
+     *
+     */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         try {
@@ -93,7 +97,47 @@ public class ForgotPasswordResetServlet extends HttpServlet {
     }
 
     /**
-     * Checks is username and forgotPasswordToken matches, and that token is not expired
+     * Check if token is valid and set new password
+     *
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
+        try {
+            String username = request.getParameter("username");
+            String forgotPasswordToken = request.getParameter("token");
+            
+            // Check if token is valid
+            if (!checkToken(username, forgotPasswordToken)) {
+                // Invalid token
+                request.setAttribute("error", true);
+            }
+            else {
+                // Token is valid
+                String password = request.getParameter("password");
+                String passwordConfirm = request.getParameter("password_confirm");
+
+                // Check if password has been provided
+                if (!(password.length() > 0)) {
+                    request.setAttribute("error_password_required", true);
+                }
+                // Check if the two password match
+                else if (!password.equals(passwordConfirm)) {
+                    request.setAttribute("error_password_match", true);
+                }
+                else {
+                    request.setAttribute("done", true);
+                }
+            }
+            RequestDispatcher rd = request.getRequestDispatcher("forgotPasswordReset.jsp");
+            rd.forward(request, response);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Checks if username and forgotPasswordToken matches, and that token is not expired
      * @return true if match, otherwise false
      *
      */
